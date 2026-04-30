@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Product {
+  id            String   @id @default(uuid())
+  name          String
+  image         String?
+  costPrice     Float
+  sellingPrice  Float
+  deliveryCost  Float    @default(0)
+  packagingCost Float    @default(0)
+  otherExpenses Float    @default(0)
+  stock         Int      @default(1)
+  status        String   @default("available")
+  weight        Float?
+  sizeHeight    Float?
+  sizeWidth     Float?
+  sizeDepth     Float?
+  createdAt     DateTime @default(now())
+
+  @@map("products")
+}
+
+model Order {
+  id           String   @id @default(uuid())
+  orderCode    String   @unique
+  productId    String
+  productName  String
+  productImage String?
+  quantity     Int
+  pricePerUnit Float
+  totalAmount  Float
+  source       String
+  notes        String   @default("")
+  createdAt    DateTime @default(now())
+
+  @@map("orders")
+}
+
+model AdCampaign {
+  id          String   @id @default(uuid())
+  name        String
+  platform    String
+  cost        Float
+  productId   String   @default("")
+  productName String   @default("")
+  startDate   String
+  endDate     String   @default("")
+  notes       String   @default("")
+  createdAt   DateTime @default(now())
+
+  @@map("ad_campaigns")
+}
+
+// ── better-auth tables ──────────────────────────────────
+
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime
+  updatedAt     DateTime
+  sessions      Session[]
+  accounts      Account[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
+}
